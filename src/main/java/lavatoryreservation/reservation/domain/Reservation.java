@@ -56,4 +56,8 @@ public class Reservation {
     public String getAlias() {
         return alias;
     }
+
+    public Long getId() {
+        return id;
+    }
 }

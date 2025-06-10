@@ -40,7 +40,7 @@ public class ReservationService {
 
         toilet.getLavatory().validateUseableMember(member);
         validateContinuousReservationTime(startTime);
-        reservationRepository.save(new Reservation(member, toilet, toiletTime, alias));
+        return reservationRepository.save(new Reservation(member, toilet, toiletTime, alias)).getId();
     }
 
     private void validateContinuousReservationTime(LocalDateTime endTime) {
