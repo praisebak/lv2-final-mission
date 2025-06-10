@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import lavatoryreservation.exception.ReservationException;
 import lavatoryreservation.lavatory.domain.Lavatory;
 import lavatoryreservation.lavatory.domain.Sex;
 import lavatoryreservation.lavatory.service.LavatoryService;
@@ -70,7 +71,7 @@ class ReservationTest {
     void 자신의_화장실_예약을_제거할_수_있다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.WOMEN));
+        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
@@ -85,35 +86,64 @@ class ReservationTest {
 
     }
 
-//    @Test
-//    void 다른사람의_화장실_예약을_제거할_수_없다() {
-//
-//    }
-//
-//    @Test
-//    void 화장실은_최대_1시간_사용할_수_있다() {
-//
-//    }
-//
-//    @Test
+    @Test
+    void 타인의_화장실_예약을_제거할_수_없다() {
+        Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
+        Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
+        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        LocalDate date = LocalDate.now().plusDays(1L);
+        LocalTime startTime = LocalTime.of(7, 0);
+        LocalTime endTime = LocalTime.of(8, 0);
+        reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                LocalDateTime.of(date, endTime)));
+
+        Long memberId2 = memberService.addMember(new Member(null, "빙봉", "praisebak2@naver.com", Sex.MEN));
+
+        assertThatThrownBy(() -> reservationService.deleteReservation(new DeleteReservationDto(memberId2, toiletId)))
+                .isInstanceOf(ReservationException.class);
+    }
+
+    //    @Test
 //    void 화장실은_연속으로_예약할_수_없다() {
 //
 //    }
 //
-//    @Test
-//    void 11시_이후로_화장실_예약을_할_수_없다() {
-//
-//    }
-//
-//    @Test
-//    void 6시_이전에_화장실_예약을_할_수_없다() {
-//
-//    }
-//
-//    @Test
-//    void 예약시_가명으로_예약된다(){
-//
-//    }
+    @Test
+    void 유효시간_이후로_화장실_예약을_할_수_없다() {
+        Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
+        Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
+        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        LocalDate date = LocalDate.now().plusDays(1L);
+        LocalTime startTime = LocalTime.of(11, 0);
+        LocalTime endTime = LocalTime.of(11, 30);
+
+        assertThatThrownBy(() -> reservationService.addReservation(
+                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                        LocalDateTime.of(date, endTime))))
+                .isInstanceOf(ReservationException.class);
+
+    }
+
+    @Test
+    void 유효시간_이전에_화장실_예약을_할_수_없다() {
+        Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
+        Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
+        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        LocalDate date = LocalDate.now().plusDays(1L);
+        LocalTime startTime = LocalTime.of(5, 0);
+        LocalTime endTime = LocalTime.of(6, 30);
+
+        assertThatThrownBy(() -> reservationService.addReservation(
+                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                        LocalDateTime.of(date, endTime))))
+                .isInstanceOf(ReservationException.class);
+
+    }
+
+    @Test
+    void 예약시_가명으로_예약된다() {
+
+    }
 }
 
 
