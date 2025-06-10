@@ -15,9 +15,9 @@ public class MemberService {
         this.memberRepository = memberRepository;
     }
 
-    public void addMember(Member member) {
+    public Long addMember(Member member) {
         validateDuplicateMember(member);
-        memberRepository.save(member);
+        return memberRepository.save(member).getId();
     }
 
     private void validateDuplicateMember(Member member) {
@@ -25,5 +25,10 @@ public class MemberService {
         if (existMember.isPresent()) {
             throw new MemberException("중복된 이메일을 가진 유저가 존재합니다");
         }
+    }
+
+    public Member getById(Long memberId) {
+        return memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException("존재하지 않는 멤버입니다"));
     }
 }

@@ -1,6 +1,6 @@
 package lavatoryreservation.toilet.repository;
 
-import lavatoryreservation.reservation.domain.Toilet;
+import lavatoryreservation.toilet.domain.Toilet;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

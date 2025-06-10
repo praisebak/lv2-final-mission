@@ -30,7 +30,8 @@ public class LavatoryService {
         return lavatoryRepository.findById(id);
     }
 
-    public void validateExistLavatory(Lavatory lavatory) {
-        findById(lavatory.getId()).orElseThrow(() -> new LavatoryException("존재하지 않는 화장실입니다"));
+    public Lavatory getById(Long lavatoryId) {
+        return lavatoryRepository.findById(lavatoryId)
+                .orElseThrow(() -> new LavatoryException("존재하지 않는 화장실 입니다."));
     }
 }

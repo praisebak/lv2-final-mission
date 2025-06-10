@@ -1,6 +1,5 @@
 package lavatoryreservation.lavatory.service;
 
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
@@ -17,10 +16,14 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class LavatoryServiceTest {
 
+    private LavatoryService lavatoryService;
+    private LavatoryRepository lavatoryRepository;
+
     @Autowired
-    LavatoryService lavatoryService;
-    @Autowired
-    LavatoryRepository lavatoryRepository;
+    public LavatoryServiceTest(LavatoryRepository lavatoryRepository) {
+        this.lavatoryRepository = lavatoryRepository;
+        this.lavatoryService = new LavatoryService(lavatoryRepository);
+    }
 
     @Test
     void 화장실을_추가할_수_있다() {

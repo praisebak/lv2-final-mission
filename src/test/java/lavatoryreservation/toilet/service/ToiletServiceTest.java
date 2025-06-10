@@ -7,7 +7,7 @@ import lavatoryreservation.lavatory.domain.Lavatory;
 import lavatoryreservation.lavatory.domain.Sex;
 import lavatoryreservation.lavatory.repository.LavatoryRepository;
 import lavatoryreservation.lavatory.service.LavatoryService;
-import lavatoryreservation.reservation.domain.Toilet;
+import lavatoryreservation.toilet.dto.AddToiletDto;
 import lavatoryreservation.toilet.repository.ToiletRepository;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -36,16 +36,16 @@ class ToiletServiceTest {
     void 화장실칸을_추가할_수_있다() {
         Lavatory lavatory = new Lavatory(null, Sex.MEN, "description");
         lavatoryService.addLavatory(lavatory);
-        toiletService.addToilet(new Toilet(null, "1번칸", true, lavatory));
+        toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
         assertThat(toiletRepository.count()).isEqualTo(1L);
     }
 
     @Test
     void 동일한_화장실의_화장실칸_설명이_동일할_수_없다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "description"));
-        toiletService.addToilet(new Toilet(null, "1번칸", true, lavatory));
+        Long toiletId = toiletService.addToilet(new AddToiletDto("1번칸", false, lavatory.getId()));
 
-        Toilet duplicateDescriptionToilet = new Toilet(null, "1번칸", true, lavatory);
+        AddToiletDto duplicateDescriptionToilet = new AddToiletDto("1번칸", false, lavatory.getId());
         assertThatThrownBy(() -> toiletService.addToilet(duplicateDescriptionToilet)).isInstanceOf(
                 IllegalArgumentException.class);
     }
@@ -53,10 +53,10 @@ class ToiletServiceTest {
     @Test
     void 다른_화장실의_화장실칸_설명은_동일할_수_있다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "description"));
-        toiletService.addToilet(new Toilet(null, "1번칸", true, lavatory));
+        Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
         Lavatory secondLavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "description2"));
 
-        Toilet duplicateDescriptionToilet = new Toilet(null, "1번칸", true, secondLavatory);
+        AddToiletDto duplicateDescriptionToilet = new AddToiletDto("1번칸", false, secondLavatory.getId());
         toiletService.addToilet(duplicateDescriptionToilet);
         assertThat(toiletRepository.count()).isEqualTo(2L);
     }
