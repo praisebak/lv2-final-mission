@@ -3,6 +3,7 @@ package lavatoryreservation.member.service;
 import java.util.Optional;
 import lavatoryreservation.exception.MemberException;
 import lavatoryreservation.member.domain.Member;
+import lavatoryreservation.member.dto.LoginDto;
 import lavatoryreservation.member.repository.MemberRepository;
 import org.springframework.stereotype.Service;
 
@@ -29,6 +30,11 @@ public class MemberService {
 
     public Member getById(Long memberId) {
         return memberRepository.findById(memberId)
+                .orElseThrow(() -> new MemberException("존재하지 않는 멤버입니다"));
+    }
+
+    public Member getByEmail(LoginDto loginDto) {
+        return memberRepository.findByEmail(loginDto.email())
                 .orElseThrow(() -> new MemberException("존재하지 않는 멤버입니다"));
     }
 }
