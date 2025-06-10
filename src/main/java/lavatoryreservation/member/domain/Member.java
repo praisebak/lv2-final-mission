@@ -34,4 +34,8 @@ public class Member {
     public Long getId() {
         return id;
     }
+
+    public Sex getSex() {
+        return sex;
+    }
 }

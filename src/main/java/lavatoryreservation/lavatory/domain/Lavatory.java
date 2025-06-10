@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lavatoryreservation.exception.LavatoryException;
+import lavatoryreservation.member.domain.Member;
 
 @Entity
 public class Lavatory {
@@ -30,5 +32,11 @@ public class Lavatory {
 
     public Long getId() {
         return id;
+    }
+
+    public void validateUseableMember(Member member) {
+        if (!sex.isSameSex(member.getSex())) {
+            throw new LavatoryException(member.getSex().getDescription() + "는 출입금지!!");
+        }
     }
 }

@@ -21,11 +21,14 @@ public class Reservation {
     private Toilet toilet;
     @Embedded
     private ToiletTime toiletTime;
+    private String alias;
+    private String alias1;
 
-    public Reservation(Member member, Toilet toilet, ToiletTime toiletTime) {
+    public Reservation(Member member, Toilet toilet, ToiletTime toiletTime, String alias) {
         this.member = member;
         this.toilet = toilet;
         this.toiletTime = toiletTime;
+        this.alias = alias;
     }
 
     protected Reservation() {
@@ -42,5 +45,12 @@ public class Reservation {
 
     public ToiletTime getToiletTime() {
         return toiletTime;
+    }
+
+    public boolean isSameOwner(Member member) {
+        if (member.getEmail().equals(this.member.getEmail())) {
+            return true;
+        }
+        return false;
     }
 }
