@@ -8,15 +8,19 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lavatoryreservation.lavatory.domain.Lavatory;
 import lavatoryreservation.lavatory.domain.Sex;
+import lavatoryreservation.lavatory.repository.LavatoryRepository;
 import lavatoryreservation.lavatory.service.LavatoryService;
 import lavatoryreservation.member.domain.Member;
+import lavatoryreservation.member.repository.MemberRepository;
 import lavatoryreservation.member.service.MemberService;
 import lavatoryreservation.reservation.domain.Reservation;
 import lavatoryreservation.reservation.dto.AddReservationDto;
 import lavatoryreservation.reservation.dto.DeleteReservationDto;
 import lavatoryreservation.reservation.repository.ReservationRepository;
 import lavatoryreservation.toilet.dto.AddToiletDto;
+import lavatoryreservation.toilet.repository.ToiletRepository;
 import lavatoryreservation.toilet.service.ToiletService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
@@ -35,8 +39,24 @@ class ReservationTest {
     ReservationService reservationService;
     @Autowired
     MemberService memberService;
+
     @Autowired
     ReservationRepository reservationRepository;
+    @Autowired
+    LavatoryRepository lavatoryRepository;
+    @Autowired
+    ToiletRepository toiletRepository;
+    @Autowired
+    MemberRepository memberRepository;
+
+
+    @BeforeEach
+    void cleanUp() {
+        reservationRepository.deleteAll();
+        toiletRepository.deleteAll();
+        lavatoryRepository.deleteAll();
+        memberRepository.deleteAll();
+    }
 
     @Test
     void 화장실과_화장실칸에_대해서_예약을할_수_있다() {
@@ -47,9 +67,10 @@ class ReservationTest {
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
 
-        reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
-                LocalDateTime.of(date, endTime)));
-        assertThat(reservationRepository.count()).isEqualTo(1L);
+        Long id = reservationService.addReservation(
+                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                        LocalDateTime.of(date, endTime)));
+        assertThat(reservationRepository.findById(id)).isPresent();
     }
 
     @Test
@@ -75,12 +96,13 @@ class ReservationTest {
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
-        reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
-                LocalDateTime.of(date, endTime)));
+        Long reservationId = reservationService.addReservation(
+                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                        LocalDateTime.of(date, endTime)));
 
         assertThat(reservationRepository.count()).isEqualTo(1L);
 
-        reservationService.deleteReservation(new DeleteReservationDto(memberId, toiletId));
+        reservationService.deleteReservation(new DeleteReservationDto(memberId, reservationId));
 
         assertThat(reservationRepository.count()).isEqualTo(0L);
 
@@ -117,7 +139,9 @@ class ReservationTest {
         reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
                 LocalDateTime.of(date, endTime)));
 
-        assertThat(reservationRepository.count()).isEqualTo(2L);
+        assertThatThrownBy(() -> reservationService.addReservation(
+                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, nextTime),
+                        LocalDateTime.of(date, nextTimeEnd)))).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -134,9 +158,10 @@ class ReservationTest {
         reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
                 LocalDateTime.of(date, endTime)));
 
-        assertThatThrownBy(() -> reservationService.addReservation(
-                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, nextTime),
-                        LocalDateTime.of(date, nextTimeEnd)))).isInstanceOf(IllegalArgumentException.class);
+        reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, nextTime),
+                LocalDateTime.of(date, nextTimeEnd)));
+
+        assertThat(reservationRepository.count()).isEqualTo(2L);
     }
 
     @Test
@@ -145,8 +170,8 @@ class ReservationTest {
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
         Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
-        LocalTime startTime = LocalTime.of(11, 0);
-        LocalTime endTime = LocalTime.of(11, 30);
+        LocalTime startTime = LocalTime.of(23, 0);
+        LocalTime endTime = LocalTime.of(23, 30);
 
         assertThatThrownBy(() -> reservationService.addReservation(
                 new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
