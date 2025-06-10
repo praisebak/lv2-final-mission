@@ -6,7 +6,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import lavatoryreservation.exception.ReservationException;
 import lavatoryreservation.lavatory.domain.Lavatory;
 import lavatoryreservation.lavatory.domain.Sex;
 import lavatoryreservation.lavatory.service.LavatoryService;
@@ -100,14 +99,45 @@ class ReservationTest {
         Long memberId2 = memberService.addMember(new Member(null, "빙봉", "praisebak2@naver.com", Sex.MEN));
 
         assertThatThrownBy(() -> reservationService.deleteReservation(new DeleteReservationDto(memberId2, toiletId)))
-                .isInstanceOf(ReservationException.class);
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
-    //    @Test
-//    void 화장실은_연속으로_예약할_수_없다() {
-//
-//    }
-//
+    @Test
+    void 화장실은_연속으로_예약할_수_없다() {
+        Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
+        Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
+        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        LocalDate date = LocalDate.now().plusDays(1L);
+        LocalTime startTime = LocalTime.of(11, 0);
+        LocalTime endTime = LocalTime.of(11, 30);
+
+        LocalTime nextTime = LocalTime.of(11, 30);
+        LocalTime nextTimeEnd = LocalTime.of(11, 40);
+        reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                LocalDateTime.of(date, endTime)));
+
+        assertThat(reservationRepository.count()).isEqualTo(2L);
+    }
+
+    @Test
+    void 연속이어도_1시간이_지나면_예약할_수_있다() {
+        Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
+        Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
+        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        LocalDate date = LocalDate.now().plusDays(1L);
+        LocalTime startTime = LocalTime.of(11, 0);
+        LocalTime endTime = LocalTime.of(11, 30);
+
+        LocalTime nextTime = LocalTime.of(12, 31);
+        LocalTime nextTimeEnd = LocalTime.of(13, 30);
+        reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                LocalDateTime.of(date, endTime)));
+
+        assertThatThrownBy(() -> reservationService.addReservation(
+                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, nextTime),
+                        LocalDateTime.of(date, nextTimeEnd)))).isInstanceOf(IllegalArgumentException.class);
+    }
+
     @Test
     void 유효시간_이후로_화장실_예약을_할_수_없다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
@@ -120,7 +150,7 @@ class ReservationTest {
         assertThatThrownBy(() -> reservationService.addReservation(
                 new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
                         LocalDateTime.of(date, endTime))))
-                .isInstanceOf(ReservationException.class);
+                .isInstanceOf(IllegalArgumentException.class);
 
     }
 
@@ -136,7 +166,7 @@ class ReservationTest {
         assertThatThrownBy(() -> reservationService.addReservation(
                 new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
                         LocalDateTime.of(date, endTime))))
-                .isInstanceOf(ReservationException.class);
+                .isInstanceOf(IllegalArgumentException.class);
 
     }
 

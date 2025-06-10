@@ -39,7 +39,15 @@ public class ReservationService {
         String alias = namingArtist.generateName();
 
         toilet.getLavatory().validateUseableMember(member);
+        validateContinuousReservationTime(startTime);
         reservationRepository.save(new Reservation(member, toilet, toiletTime, alias));
+    }
+
+    private void validateContinuousReservationTime(LocalDateTime endTime) {
+        LocalDateTime startTime = endTime.minusHours(1L);
+        if (reservationRepository.existsByToiletTime_EndTimeBetween(startTime, endTime)) {
+            throw new ReservationException("1시간 연속으로 예약할 수 없습니다");
+        }
     }
 
     public void deleteReservation(DeleteReservationDto deleteReservationDto) {

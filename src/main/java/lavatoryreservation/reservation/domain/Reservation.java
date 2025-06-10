@@ -22,7 +22,6 @@ public class Reservation {
     @Embedded
     private ToiletTime toiletTime;
     private String alias;
-    private String alias1;
 
     public Reservation(Member member, Toilet toilet, ToiletTime toiletTime, String alias) {
         this.member = member;

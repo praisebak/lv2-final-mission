@@ -9,7 +9,7 @@ import lavatoryreservation.exception.ReservationException;
 public class ToiletTime {
 
     private static final LocalTime RESERVATION_START_TIME = LocalTime.of(6, 0);
-    private static final LocalTime RESERVATION_OVER_TIME = LocalTime.of(11, 0);
+    private static final LocalTime RESERVATION_OVER_TIME = LocalTime.of(23, 0);
 
     private LocalDateTime startTime;
     private LocalDateTime endTime;
