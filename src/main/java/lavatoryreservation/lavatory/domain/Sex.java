@@ -1,4 +1,7 @@
 package lavatoryreservation.lavatory.domain;
 
-public class LavatoryService {
+public enum Sex {
+    MEN,
+    WOMEN,
+    ETC
 }
