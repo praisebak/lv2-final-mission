@@ -11,6 +11,7 @@ import lavatoryreservation.lavatory.domain.Sex;
 import lavatoryreservation.lavatory.service.LavatoryService;
 import lavatoryreservation.member.domain.Member;
 import lavatoryreservation.member.service.MemberService;
+import lavatoryreservation.reservation.domain.Reservation;
 import lavatoryreservation.reservation.dto.AddReservationDto;
 import lavatoryreservation.reservation.dto.DeleteReservationDto;
 import lavatoryreservation.reservation.repository.ReservationRepository;
@@ -172,7 +173,20 @@ class ReservationTest {
 
     @Test
     void 예약시_가명으로_예약된다() {
+        Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
+        Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
+        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        LocalDate date = LocalDate.now().plusDays(1L);
+        LocalTime startTime = LocalTime.of(7, 0);
+        LocalTime endTime = LocalTime.of(8, 0);
 
+        Long reservationId = reservationService.addReservation(
+                new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
+                        LocalDateTime.of(date, endTime)));
+        Reservation reservation = reservationRepository.findById(reservationId).get();
+        String name = reservation.getMember().getName();
+        String alias = reservation.getAlias();
+        assertThat(name).isNotEqualTo(alias);
     }
 }
 

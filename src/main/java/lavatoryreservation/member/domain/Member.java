@@ -38,4 +38,8 @@ public class Member {
     public Sex getSex() {
         return sex;
     }
+
+    public String getName() {
+        return name;
+    }
 }

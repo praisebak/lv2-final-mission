@@ -52,4 +52,8 @@ public class Reservation {
         }
         return false;
     }
+
+    public String getAlias() {
+        return alias;
+    }
 }
