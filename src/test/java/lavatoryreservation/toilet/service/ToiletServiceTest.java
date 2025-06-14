@@ -20,14 +20,12 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 class ToiletServiceTest {
 
     private final ToiletRepository toiletRepository;
-    private final LavatoryRepository lavatoryRepository;
     private final LavatoryService lavatoryService;
     private final ToiletService toiletService;
 
     @Autowired
     public ToiletServiceTest(ToiletRepository toiletRepository, LavatoryRepository lavatoryRepository) {
         this.toiletRepository = toiletRepository;
-        this.lavatoryRepository = lavatoryRepository;
         this.lavatoryService = new LavatoryService(lavatoryRepository);
         this.toiletService = new ToiletService(toiletRepository, lavatoryService);
     }
