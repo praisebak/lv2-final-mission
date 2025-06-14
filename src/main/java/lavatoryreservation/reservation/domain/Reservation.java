@@ -47,10 +47,7 @@ public class Reservation {
     }
 
     public boolean isSameOwner(Member member) {
-        if (member.getEmail().equals(this.member.getEmail())) {
-            return true;
-        }
-        return false;
+        return member.isSameMember(this.member);
     }
 
     public String getAlias() {
