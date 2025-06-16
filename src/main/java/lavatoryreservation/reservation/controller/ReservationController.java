@@ -39,9 +39,7 @@ public class ReservationController {
     @DeleteMapping
     public ResponseEntity<Void> deleteReservation(@RequestBody DeleteReservationDto deleteReservationDto,
                                                   @MemberInfo MemberAuthentication memberAuthentication) {
-        DeleteReservationDto memberDeleteReservationDto = new DeleteReservationDto(memberAuthentication.id(),
-                deleteReservationDto.reservationId());
-        reservationService.deleteReservation(memberDeleteReservationDto);
+        reservationService.deleteReservation(deleteReservationDto, memberAuthentication.id());
         return ResponseEntity.ok().build();
     }
 

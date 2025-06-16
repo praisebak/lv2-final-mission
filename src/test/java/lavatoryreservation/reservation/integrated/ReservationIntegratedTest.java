@@ -8,8 +8,11 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import lavatoryreservation.auth.IntegratedRestAssuredTest;
+import lavatoryreservation.lavatory.repository.LavatoryRepository;
+import lavatoryreservation.member.repository.MemberRepository;
 import lavatoryreservation.reservation.dto.ReservationSpecificDto;
 import lavatoryreservation.reservation.repository.ReservationRepository;
+import lavatoryreservation.toilet.repository.ToiletRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -26,6 +29,12 @@ class ReservationIntegratedTest extends IntegratedRestAssuredTest {
     private Long memberId;
     @Autowired
     private ReservationRepository reservationRepository;
+    @Autowired
+    private MemberRepository memberRepository;
+    @Autowired
+    private ToiletRepository toiletRepository;
+    @Autowired
+    private LavatoryRepository lavatoryRepository;
 
     @BeforeEach
     void init() {
@@ -34,6 +43,11 @@ class ReservationIntegratedTest extends IntegratedRestAssuredTest {
         signupDto.put("email", "prasebak222@naver.com");
         signupDto.put("sex", "MEN");
         signupDto.put("name", "prasebak");
+
+        reservationRepository.deleteAll();
+        memberRepository.deleteAll();
+        toiletRepository.deleteAll();
+        lavatoryRepository.deleteAll();
 
         memberId = RestAssured
                 .given()
@@ -131,7 +145,7 @@ class ReservationIntegratedTest extends IntegratedRestAssuredTest {
         Map<String, Object> addReservation = Map.of("memberId", memberId, "toiletId", toiletId, "startTime",
                 LocalDateTime.now(), "endTime", LocalDateTime.now().plusHours(1L));
 
-        RestAssured
+        Long reservationId = RestAssured
                 .given().log().all()
                 .cookies(loginCookies)
                 .body(addReservation)
@@ -139,65 +153,22 @@ class ReservationIntegratedTest extends IntegratedRestAssuredTest {
                 .post("api/reservation/")
                 .then().log().all()
                 .extract()
-                .statusCode();
-
-        ReservationSpecificDto reservationSpecificDto = RestAssured
-                .given().log().all()
-                .cookies(loginCookies)
-                .get("api/reservation/my")
-                .then().log().all()
-                .extract()
                 .body()
-                .as(ReservationSpecificDto.class);
-        assertThat(reservationSpecificDto).isNotNull();
-    }
+                .as(Long.class);
 
-    @Test
-    void 유저는_다른사람의_예약을_삭제할_수_없다() {
-        Map<String, String> addLavatory = Map.of("sex", "MEN", "description", "잠실1화장실");
+        long deletePrevCount = reservationRepository.count();
 
-        Long lavatoryId = RestAssured
-                .given().log().all()
-                .cookies(loginCookies)
-                .body(addLavatory)
-                .contentType("application/json")
-                .post("api/lavatory/")
-                .then().log().all()
-                .extract()
-                .body().as(Long.class);
-
-        Long toiletId = RestAssured
-                .given().log().all()
-                .cookies(loginCookies)
-                .body(Map.of("description", "hello", "isBidet", false, "lavatoryId", lavatoryId))
-                .contentType("application/json")
-                .post("api/toilet/")
-                .then().log().all()
-                .extract()
-                .body().as(Long.class);
-
-        Map<String, Object> addReservation = Map.of("memberId", memberId, "toiletId", toiletId, "startTime",
-                LocalDateTime.now(), "endTime", LocalDateTime.now().plusHours(1L));
-
+        Map<String, Object> deleteReservation = Map.of("reservationId", reservationId);
         RestAssured
                 .given().log().all()
                 .cookies(loginCookies)
-                .body(addReservation)
+                .body(deleteReservation)
                 .contentType("application/json")
-                .post("api/reservation/")
+                .delete("api/reservation/")
                 .then().log().all()
-                .extract()
-                .statusCode();
+                .extract();
 
-        ReservationSpecificDto reservationSpecificDto = RestAssured
-                .given().log().all()
-                .cookies(loginCookies)
-                .get("api/reservation/my")
-                .then().log().all()
-                .extract()
-                .body()
-                .as(ReservationSpecificDto.class);
-        assertThat(reservationSpecificDto).isNotNull();
+        assertThat(reservationRepository.count()).isEqualTo(deletePrevCount - 1);
     }
 
     @Test

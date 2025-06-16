@@ -102,7 +102,7 @@ class ReservationTest {
 
         assertThat(reservationRepository.count()).isEqualTo(1L);
 
-        reservationService.deleteReservation(new DeleteReservationDto(memberId, reservationId));
+        reservationService.deleteReservation(new DeleteReservationDto(reservationId), memberId);
 
         assertThat(reservationRepository.count()).isEqualTo(0L);
 
@@ -121,7 +121,7 @@ class ReservationTest {
 
         Long memberId2 = memberService.addMember(new SignupDto("빙봉", "praisebak2@naver.com", Sex.MEN));
 
-        assertThatThrownBy(() -> reservationService.deleteReservation(new DeleteReservationDto(memberId2, toiletId)))
+        assertThatThrownBy(() -> reservationService.deleteReservation(new DeleteReservationDto(toiletId), memberId2))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 

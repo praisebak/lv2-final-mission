@@ -1,5 +1,5 @@
 package lavatoryreservation.reservation.dto;
 
-public record DeleteReservationDto(Long memberId, Long reservationId) {
+public record DeleteReservationDto(Long reservationId) {
 
 }

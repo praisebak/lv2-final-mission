@@ -51,8 +51,8 @@ public class ReservationService {
         }
     }
 
-    public void deleteReservation(DeleteReservationDto deleteReservationDto) {
-        Member member = memberService.getById(deleteReservationDto.memberId());
+    public void deleteReservation(DeleteReservationDto deleteReservationDto, Long memberId) {
+        Member member = memberService.getById(memberId);
         Reservation reservation = getById(deleteReservationDto.reservationId());
         validateSameOwner(reservation, member);
         reservationRepository.deleteById(deleteReservationDto.reservationId());
