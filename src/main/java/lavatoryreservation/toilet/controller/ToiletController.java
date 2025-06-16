@@ -4,6 +4,7 @@ import lavatoryreservation.toilet.dto.AddToiletDto;
 import lavatoryreservation.toilet.service.ToiletService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,7 +18,7 @@ public class ToiletController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> addToilet(AddToiletDto addToiletDto) {
+    public ResponseEntity<Long> addToilet(@RequestBody AddToiletDto addToiletDto) {
         Long id = toiletService.addToilet(addToiletDto);
         return ResponseEntity.ok(id);
     }

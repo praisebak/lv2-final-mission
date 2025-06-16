@@ -1,5 +1,6 @@
 package lavatoryreservation.reservation.controller;
 
+import java.util.List;
 import lavatoryreservation.external.auth.MemberAuthentication;
 import lavatoryreservation.external.auth.MemberInfo;
 import lavatoryreservation.reservation.domain.Reservation;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +27,7 @@ public class ReservationController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> addReservation(AddReservationDto addReservationDto,
+    public ResponseEntity<Long> addReservation(@RequestBody AddReservationDto addReservationDto,
                                                @MemberInfo MemberAuthentication memberAuthentication) {
         AddReservationDto memberAddReservationDto = new AddReservationDto(memberAuthentication.id(),
                 addReservationDto.toiletId(), addReservationDto.startTime(), addReservationDto.endTime());
@@ -35,7 +37,7 @@ public class ReservationController {
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deleteReservation(DeleteReservationDto deleteReservationDto,
+    public ResponseEntity<Void> deleteReservation(@RequestBody DeleteReservationDto deleteReservationDto,
                                                   @MemberInfo MemberAuthentication memberAuthentication) {
         DeleteReservationDto memberDeleteReservationDto = new DeleteReservationDto(memberAuthentication.id(),
                 deleteReservationDto.reservationId());
@@ -47,5 +49,14 @@ public class ReservationController {
     public ResponseEntity<ReservationSpecificDto> myReservation(@MemberInfo MemberAuthentication memberAuthentication) {
         Reservation reservation = reservationService.myReservation(memberAuthentication.id());
         return ResponseEntity.ok(ReservationSpecificDto.from(reservation));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<ReservationSpecificDto>> myReservation() {
+        List<Reservation> reservation = reservationService.allReservations();
+        List<ReservationSpecificDto> reservationSpecificDtos = reservation.stream()
+                .map(ReservationSpecificDto::from)
+                .toList();
+        return ResponseEntity.ok(reservationSpecificDtos);
     }
 }

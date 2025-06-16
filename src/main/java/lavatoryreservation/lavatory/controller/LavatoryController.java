@@ -4,6 +4,7 @@ import lavatoryreservation.lavatory.domain.Lavatory;
 import lavatoryreservation.lavatory.service.LavatoryService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -18,7 +19,7 @@ public class LavatoryController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> addLavatory(Lavatory lavatory) {
+    public ResponseEntity<Long> addLavatory(@RequestBody Lavatory lavatory) {
         Lavatory createdLavatory = lavatoryService.addLavatory(lavatory);
         return ResponseEntity.ok(createdLavatory.getId());
     }

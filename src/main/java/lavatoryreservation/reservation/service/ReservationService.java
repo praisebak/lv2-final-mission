@@ -1,6 +1,7 @@
 package lavatoryreservation.reservation.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lavatoryreservation.exception.ReservationException;
 import lavatoryreservation.external.nameartist.NamingArtistClient;
 import lavatoryreservation.member.domain.Member;
@@ -71,5 +72,9 @@ public class ReservationService {
     public Reservation myReservation(Long id) {
         return reservationRepository.findByMember_id(id)
                 .orElseThrow(() -> new ReservationException("존재하지 않는 멤버의 예약입니다"));
+    }
+
+    public List<Reservation> allReservations() {
+        return reservationRepository.findAll();
     }
 }
