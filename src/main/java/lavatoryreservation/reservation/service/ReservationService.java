@@ -67,4 +67,9 @@ public class ReservationService {
         return reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("존재하지 않는 예약입니다"));
     }
+
+    public Reservation myReservation(Long id) {
+        return reservationRepository.findByMember_id(id)
+                .orElseThrow(() -> new ReservationException("존재하지 않는 멤버의 예약입니다"));
+    }
 }

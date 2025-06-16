@@ -33,4 +33,12 @@ public class ToiletTime {
     protected ToiletTime() {
 
     }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
 }

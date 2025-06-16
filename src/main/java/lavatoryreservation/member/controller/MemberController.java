@@ -5,10 +5,12 @@ import jakarta.servlet.http.HttpServletResponse;
 import lavatoryreservation.external.auth.JwtTokenProvider;
 import lavatoryreservation.member.domain.Member;
 import lavatoryreservation.member.dto.LoginDto;
+import lavatoryreservation.member.dto.SignupDto;
 import lavatoryreservation.member.service.MemberService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,8 +29,8 @@ public class MemberController {
     }
 
     @PostMapping
-    public ResponseEntity<Long> addMember(Member member) {
-        Long memberId = memberService.addMember(member);
+    public ResponseEntity<Long> addMember(@RequestBody SignupDto signupDto) {
+        Long memberId = memberService.addMember(signupDto);
         return ResponseEntity.ok(memberId);
     }
 
@@ -38,7 +40,6 @@ public class MemberController {
         Cookie cookie = new Cookie(JwtTokenProvider.getCookieKey(), jwtTokenProvider.createToken(member));
         cookie.setMaxAge(ONE_HOUR);
         response.addCookie(cookie);
-
         return ResponseEntity.ok().build();
     }
 }
