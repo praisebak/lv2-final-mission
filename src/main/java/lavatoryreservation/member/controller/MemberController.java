@@ -1,7 +1,7 @@
 package lavatoryreservation.member.controller;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import lavatoryreservation.auth.JwtCookie;
 import lavatoryreservation.external.auth.JwtTokenProvider;
 import lavatoryreservation.member.domain.Member;
 import lavatoryreservation.member.dto.LoginDto;
@@ -17,8 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/member/")
 public class MemberController {
-
-    private static final int ONE_HOUR = 3600;
 
     private final MemberService memberService;
     private final JwtTokenProvider jwtTokenProvider;
@@ -37,9 +35,11 @@ public class MemberController {
     @GetMapping
     public ResponseEntity<Void> login(LoginDto loginDto, HttpServletResponse response) {
         Member member = memberService.getByEmail(loginDto);
-        Cookie cookie = new Cookie(JwtTokenProvider.getCookieKey(), jwtTokenProvider.createToken(member));
-        cookie.setMaxAge(ONE_HOUR);
-        response.addCookie(cookie);
-        return ResponseEntity.ok().build();
+
+        String jwt = jwtTokenProvider.createToken(member);
+        JwtCookie jwtCookie = new JwtCookie(jwt);
+        return ResponseEntity.ok()
+                .header(JwtTokenProvider.getCookieKey(), jwtCookie.cookie())
+                .build();
     }
 }
