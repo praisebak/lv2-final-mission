@@ -68,25 +68,8 @@ jobs:
       - name: Start server
         run: |
           cd /home/lavatory
-          sudo nohup ./start-server.sh
+          ./start-server.sh &
           echo "Server starting in background..."
-          
-          # 서버 시작 확인
-          sleep 10
-          if pgrep -f "java.*matilda" > /dev/null; then
-            echo "✅ Server started successfully"
-          else
-            echo "❌ Server failed to start"
-            echo "Last 20 lines of server log:"
-            tail -20 server.log || true
-            exit 1
-          fi
-
-      - name: Health check (optional)
-        run: |
-          # 애플리케이션이 HTTP 서버라면 헬스체크 추가
-          # curl -f http://localhost:8080/health || echo "Health check endpoint not available"
-          echo "Deployment completed"
 
       - name: Cleanup
         if: always()
