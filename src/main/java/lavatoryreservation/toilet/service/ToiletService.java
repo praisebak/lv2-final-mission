@@ -8,6 +8,8 @@ import lavatoryreservation.toilet.dto.AddToiletDto;
 import lavatoryreservation.toilet.repository.ToiletRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ToiletService {
 
@@ -35,5 +37,9 @@ public class ToiletService {
     public Toilet getById(Long id) {
         return toiletRepository.findById(id)
                 .orElseThrow(() -> new ToiletException("존재하지 않는 화장실칸입니다"));
+    }
+
+    public List<Toilet> getToilets() {
+        return toiletRepository.findAll();
     }
 }
