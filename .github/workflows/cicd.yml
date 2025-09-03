@@ -37,7 +37,7 @@ jobs:
           EOF
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew bootjar
 
       - name: Stop existing server
         run: |
