@@ -31,7 +31,7 @@ jobs:
 
       - name: Generate application.properties
         run: |
-          mkdir -p src/main/resources
+          sudo mkdir -p src/main/resources
           cat <<EOF > src/main/resources/application-prod.properties
           ${{ secrets.APPLICATION_PROPERTIES }}
           EOF
@@ -48,7 +48,7 @@ jobs:
       - name: Deploy to application directory
         run: |
           # lavatory 디렉토리가 없으면 생성
-          mkdir -p /home/lavatory
+          sudo mkdir -p /home/lavatory
           
           # 기존 jar 파일들 백업 및 제거
           if [ -d "/home/lavatory/libs" ]; then
