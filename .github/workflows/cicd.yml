@@ -17,8 +17,8 @@ jobs:
 
       - name: Clean previous build artifacts
         run: |
-          rm -rf build/
-          rm -rf src/main/resources/application.properties
+          sudo rm -rf build/
+          sudo rm -rf src/main/resources/application.properties
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -32,9 +32,7 @@ jobs:
       - name: Generate application.properties
         run: |
           sudo mkdir -p src/main/resources
-          cat <<EOF > src/main/resources/application-prod.properties
-          ${{ secrets.APPLICATION_PROPERTIES }}
-          EOF
+          echo "${{ secrets.APPLICATION_PROPERTIES }}" | sudo tee src/main/resources/application-prod.properties > /dev/null
 
       - name: Build with Gradle
         run: ./gradlew bootjar
@@ -42,7 +40,7 @@ jobs:
       - name: Stop existing server
         run: |
           # 기존 서버 프로세스 종료
-          pkill -f "java.*matilda" || true
+          sudo pkill -f "java.*matilda" || true
           sleep 3
 
       - name: Deploy to application directory
@@ -52,27 +50,25 @@ jobs:
           
           # 기존 jar 파일들 백업 및 제거
           if [ -d "/home/lavatory/libs" ]; then
-            rm -rf /home/lavatory/libs.backup
-            mv /home/lavatory/libs /home/lavatory/libs.backup
+            sudo rm -rf /home/lavatory/libs.backup
+            sudo mv /home/lavatory/libs /home/lavatory/libs.backup
           fi
           
           # 새 빌드 파일들 복사
-          cp -r build/libs /home/lavatory/
+          sudo cp -r build/libs /home/lavatory/
           
-          # start-server.sh가 없으면 생성 (선택적)
+          # start-server.sh가 없으면 생성
           if [ ! -f "/home/lavatory/start-server.sh" ]; then
-            cat <<EOF > /home/lavatory/start-server.sh
-          #!/bin/bash
-          cd /home/lavatory
-          java -Dspring.profiles.active=prod -jar libs/*.jar 
-          EOF
-            chmod +x /home/lavatory/start-server.sh
+            echo '#!/bin/bash' | sudo tee /home/lavatory/start-server.sh > /dev/null
+            echo 'cd /home/lavatory' | sudo tee -a /home/lavatory/start-server.sh > /dev/null
+            echo 'java -Dspring.profiles.active=prod -jar libs/*.jar' | sudo tee -a /home/lavatory/start-server.sh > /dev/null
+            sudo chmod +x /home/lavatory/start-server.sh
           fi
 
       - name: Start server
         run: |
           cd /home/lavatory
-          nohup ./start-server.sh > server.log 2>&1 &
+          sudo nohup ./start-server.sh > server.log 2>&1 &
           echo "Server starting in background..."
           
           # 서버 시작 확인
@@ -96,5 +92,5 @@ jobs:
         if: always()
         run: |
           # 임시 파일 정리
-          rm -rf build/
-          rm -f src/main/resources/application.properties
+          sudo rm -rf build/
+          sudo rm -f src/main/resources/application.properties
