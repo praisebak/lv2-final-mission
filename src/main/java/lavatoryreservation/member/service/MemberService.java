@@ -1,13 +1,18 @@
 package lavatoryreservation.member.service;
 
 import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.stereotype.Service;
+
 import lavatoryreservation.exception.MemberException;
 import lavatoryreservation.member.domain.Email;
 import lavatoryreservation.member.domain.Member;
 import lavatoryreservation.member.dto.LoginDto;
 import lavatoryreservation.member.dto.SignupDto;
 import lavatoryreservation.member.repository.MemberRepository;
-import org.springframework.stereotype.Service;
 
 @Service
 public class MemberService {
