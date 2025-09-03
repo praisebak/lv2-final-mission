@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD Pipeline (Local Self-Hosted)
 
 on:
   push:
@@ -7,14 +7,21 @@ on:
 
 jobs:
   cicd:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          clean: false
+
+      - name: Clean previous build artifacts
+        run: |
+          rm -rf build/
+          rm -rf src/main/resources/application.properties
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: 21
@@ -25,51 +32,69 @@ jobs:
       - name: Generate application.properties
         run: |
           mkdir -p src/main/resources
-          cat <<EOF > src/main/resources/application.properties
+          cat <<EOF > src/main/resources/application-prod.properties
           ${{ secrets.APPLICATION_PROPERTIES }}
           EOF
 
       - name: Build with Gradle
         run: ./gradlew build
 
-      - name: Create zip file
+      - name: Stop existing server
         run: |
-          zip -r build/build-artifacts.zip build/libs/* 
+          # 기존 서버 프로세스 종료
+          pkill -f "java.*matilda" || true
+          sleep 3
 
-      - name: set mode for tar
-        run: chmod 775 build/build-artifacts.zip
-
-      - name: Set up SSH key
+      - name: Deploy to application directory
         run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC_SECRET }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ serets.EC_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Verify SSH key
-        run: |
-          ls -l ~/.ssh
-          cat ~/.ssh/id_rsa | head -n 5  # SSH 키 상위 5줄만 출력 (보안 문제 방지)
-
-      - name: Deploy to EC instance
-        run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC_USER }}@${{ secrets.EC_HOST }} << 'EOF'
-            cd /home/matilda-backend  # 이동할 디렉토리 (프로젝트 디렉토리로 변경)
-            rm -rf build-artifacts.zip  # 기존 파일 제거
-            exit
+          # lavatory 디렉토리가 없으면 생성
+          mkdir -p /home/lavatory
+          
+          # 기존 jar 파일들 백업 및 제거
+          if [ -d "/home/lavatory/libs" ]; then
+            rm -rf /home/lavatory/libs.backup
+            mv /home/lavatory/libs /home/lavatory/libs.backup
+          fi
+          
+          # 새 빌드 파일들 복사
+          cp -r build/libs /home/lavatory/
+          
+          # start-server.sh가 없으면 생성 (선택적)
+          if [ ! -f "/home/lavatory/start-server.sh" ]; then
+            cat <<EOF > /home/lavatory/start-server.sh
+          #!/bin/bash
+          cd /home/lavatory
+          java -Dspring.profiles.active=prod -jar libs/*.jar 
           EOF
-          
-          scp -i ~/.ssh/id_rsa build/build-artifacts.zip ${{ secrets.EC_USER }}@${{ secrets.EC_HOST }}:/home/ubuntu
-          
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.EC_USER }}@${{ secrets.EC_HOST }} << 'EOF'
-          cd /home/matilda-backend
-          unzip -o build-artifacts.zip
-          
-          # nohup을 사용하여 서버를 백그라운드에서 실행하고 stdout/stderr를 파일로 리다이렉션
+            chmod +x /home/lavatory/start-server.sh
+          fi
+
+      - name: Start server
+        run: |
+          cd /home/lavatory
           nohup ./start-server.sh > server.log 2>&1 &
-          # 즉시 종료되도록 명시적인 종료 코드 추가
-          echo "Server started in background"
-          exit
-          EOF
+          echo "Server starting in background..."
+          
+          # 서버 시작 확인
+          sleep 10
+          if pgrep -f "java.*matilda" > /dev/null; then
+            echo "✅ Server started successfully"
+          else
+            echo "❌ Server failed to start"
+            echo "Last 20 lines of server log:"
+            tail -20 server.log || true
+            exit 1
+          fi
 
-     
+      - name: Health check (optional)
+        run: |
+          # 애플리케이션이 HTTP 서버라면 헬스체크 추가
+          # curl -f http://localhost:8080/health || echo "Health check endpoint not available"
+          echo "Deployment completed"
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # 임시 파일 정리
+          rm -rf build/
+          rm -f src/main/resources/application.properties
