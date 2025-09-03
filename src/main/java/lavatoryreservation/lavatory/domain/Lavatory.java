@@ -34,6 +34,10 @@ public class Lavatory {
         return id;
     }
 
+    public Sex getSex() {
+        return sex;
+    }
+
     public void validateUseableMember(Member member) {
         if (!sex.isSameSex(member.getSex())) {
             throw new LavatoryException(member.getSex().getDescription() + "는 출입금지!!");

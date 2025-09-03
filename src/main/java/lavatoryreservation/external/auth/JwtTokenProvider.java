@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.RequiredTypeException;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.Cookie;
 import java.util.Date;
 import lavatoryreservation.exception.AuthenticationException;
 import lavatoryreservation.member.domain.Member;
@@ -52,5 +53,9 @@ public class JwtTokenProvider {
 
     public static String getCookieKey() {
         return COOKIE_KEY;
+    }
+
+    public Cookie createCookie(Member member) {
+        return new Cookie(getCookieKey(), createToken(member));
     }
 }

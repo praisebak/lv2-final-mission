@@ -1,6 +1,7 @@
 package lavatoryreservation.reservation.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lavatoryreservation.exception.ReservationException;
 import lavatoryreservation.external.nameartist.NamingArtistClient;
 import lavatoryreservation.member.domain.Member;
@@ -50,8 +51,8 @@ public class ReservationService {
         }
     }
 
-    public void deleteReservation(DeleteReservationDto deleteReservationDto) {
-        Member member = memberService.getById(deleteReservationDto.memberId());
+    public void deleteReservation(DeleteReservationDto deleteReservationDto, Long memberId) {
+        Member member = memberService.getById(memberId);
         Reservation reservation = getById(deleteReservationDto.reservationId());
         validateSameOwner(reservation, member);
         reservationRepository.deleteById(deleteReservationDto.reservationId());
@@ -66,5 +67,14 @@ public class ReservationService {
     private Reservation getById(Long id) {
         return reservationRepository.findById(id)
                 .orElseThrow(() -> new ReservationException("존재하지 않는 예약입니다"));
+    }
+
+    public Reservation myReservation(Long id) {
+        return reservationRepository.findByMember_id(id)
+                .orElseThrow(() -> new ReservationException("존재하지 않는 멤버의 예약입니다"));
+    }
+
+    public List<Reservation> allReservations() {
+        return reservationRepository.findAll();
     }
 }

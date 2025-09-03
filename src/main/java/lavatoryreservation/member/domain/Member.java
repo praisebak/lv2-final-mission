@@ -1,5 +1,6 @@
 package lavatoryreservation.member.domain;
 
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -13,13 +14,14 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String email;
+    @Embedded
+    private Email email;
     private Sex sex;
 
     public Member(Long id, String name, String email, Sex sex) {
         this.id = id;
         this.name = name;
-        this.email = email;
+        this.email = new Email(email);
         this.sex = sex;
     }
 
@@ -28,7 +30,7 @@ public class Member {
     }
 
     public String getEmail() {
-        return email;
+        return email.getEmailString();
     }
 
     public Long getId() {
@@ -41,5 +43,9 @@ public class Member {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isSameMember(Member member) {
+        return email.isSameMember(member.email);
     }
 }

@@ -10,7 +10,7 @@ import lavatoryreservation.lavatory.domain.Lavatory;
 import lavatoryreservation.lavatory.domain.Sex;
 import lavatoryreservation.lavatory.repository.LavatoryRepository;
 import lavatoryreservation.lavatory.service.LavatoryService;
-import lavatoryreservation.member.domain.Member;
+import lavatoryreservation.member.dto.SignupDto;
 import lavatoryreservation.member.repository.MemberRepository;
 import lavatoryreservation.member.service.MemberService;
 import lavatoryreservation.reservation.domain.Reservation;
@@ -62,7 +62,7 @@ class ReservationTest {
     void 화장실과_화장실칸에_대해서_예약을할_수_있다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
@@ -77,7 +77,7 @@ class ReservationTest {
     void 화장실은_같은_성별이아니면_예약이_불가능하다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.WOMEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.WOMEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
@@ -92,7 +92,7 @@ class ReservationTest {
     void 자신의_화장실_예약을_제거할_수_있다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
@@ -102,7 +102,7 @@ class ReservationTest {
 
         assertThat(reservationRepository.count()).isEqualTo(1L);
 
-        reservationService.deleteReservation(new DeleteReservationDto(memberId, reservationId));
+        reservationService.deleteReservation(new DeleteReservationDto(reservationId), memberId);
 
         assertThat(reservationRepository.count()).isEqualTo(0L);
 
@@ -112,16 +112,16 @@ class ReservationTest {
     void 타인의_화장실_예약을_제거할_수_없다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
         reservationService.addReservation(new AddReservationDto(memberId, toiletId, LocalDateTime.of(date, startTime),
                 LocalDateTime.of(date, endTime)));
 
-        Long memberId2 = memberService.addMember(new Member(null, "빙봉", "praisebak2@naver.com", Sex.MEN));
+        Long memberId2 = memberService.addMember(new SignupDto("빙봉", "praisebak2@naver.com", Sex.MEN));
 
-        assertThatThrownBy(() -> reservationService.deleteReservation(new DeleteReservationDto(memberId2, toiletId)))
+        assertThatThrownBy(() -> reservationService.deleteReservation(new DeleteReservationDto(toiletId), memberId2))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -129,7 +129,7 @@ class ReservationTest {
     void 화장실은_연속으로_예약할_수_없다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(11, 0);
         LocalTime endTime = LocalTime.of(11, 30);
@@ -148,7 +148,7 @@ class ReservationTest {
     void 연속이어도_1시간이_지나면_예약할_수_있다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(11, 0);
         LocalTime endTime = LocalTime.of(11, 30);
@@ -168,7 +168,7 @@ class ReservationTest {
     void 유효시간_이후로_화장실_예약을_할_수_없다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(23, 0);
         LocalTime endTime = LocalTime.of(23, 30);
@@ -184,7 +184,7 @@ class ReservationTest {
     void 유효시간_이전에_화장실_예약을_할_수_없다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(5, 0);
         LocalTime endTime = LocalTime.of(6, 30);
@@ -200,7 +200,7 @@ class ReservationTest {
     void 예약시_가명으로_예약된다() {
         Lavatory lavatory = lavatoryService.addLavatory(new Lavatory(null, Sex.MEN, "잠실굿샷남자화장실"));
         Long toiletId = toiletService.addToilet(new AddToiletDto(null, false, lavatory.getId()));
-        Long memberId = memberService.addMember(new Member(null, "투다", "praisebak@naver.com", Sex.MEN));
+        Long memberId = memberService.addMember(new SignupDto("투다", "praisebak@naver.com", Sex.MEN));
         LocalDate date = LocalDate.now().plusDays(1L);
         LocalTime startTime = LocalTime.of(7, 0);
         LocalTime endTime = LocalTime.of(8, 0);
